@@ -65,7 +65,7 @@ class LoginView(generics.GenericAPIView):
             return Response({
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
-                'usertype': str(user.user_type.name),
+                'usertype': str(user.user_type.name) if user.user_type else 'SuperAdmin',
                 'user_id': str(user.id),
                 'login_name': str(user.namefull)
             })
