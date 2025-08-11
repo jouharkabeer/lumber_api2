@@ -118,8 +118,11 @@ class UserCreateView(generics.CreateAPIView):
 
 class UserListView(generics.ListAPIView):
     # queryset = User.objects.all()
-    queryset = User.objects.filter(is_superuser=False)
     serializer_class = UserSerializer
+    def get_queryset(self):
+        return User.objects.filter(
+            is_superuser=False
+        ).exclude(id=self.request.user.id)
 
 class UserActiveListView(generics.ListAPIView):
     queryset = User.objects.filter(is_active=True)
