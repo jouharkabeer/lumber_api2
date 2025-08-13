@@ -1,13 +1,14 @@
 from django.db import models
 from master.models import *
+from django.db.models import Sum
 
 
 # Create your models here.
 class SalesWeb(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     salesman = models.ForeignKey(User, on_delete=models.CASCADE)
-    hardwarematerials = models.ManyToManyField(HardWareMaterial, null=True, blank=True)
-    timbermaterials = models.ManyToManyField(TimberMaterial,  null=True, blank=True)
+    hardwarematerials = models.ManyToManyField(HardWareMaterial, blank=True)
+    timbermaterials = models.ManyToManyField(TimberMaterial,  blank=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     call_status = models.ForeignKey(CallStatus, on_delete=models.CASCADE)
     prospect = models.ForeignKey(Prospect, on_delete=models.CASCADE, null=True, blank=True)
@@ -33,7 +34,6 @@ class SalesWeb(models.Model):
     collected_tt = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     collected_cash = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
-    order_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     due_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_created")
@@ -43,9 +43,9 @@ class SalesWeb(models.Model):
 
     def save(self, *args, **kwargs):
         # Calculate due amount if order value is given
-        if self.order_value is not None:
+        if self.soa_amount is not None:
             self.payment_recieved = self.payment_recieved or 0
-            self.due_amount = self.order_value - self.payment_recieved
+            self.due_amount = self.soa_amount - self.payment_recieved
 
         # Set expected_payment_amount based on priority of available expected values
         self.expected_payment_amount = (
@@ -92,7 +92,6 @@ class SalesWeb(models.Model):
             collected_cdc=self.collected_cdc,
             collected_tt=self.collected_tt,
             collected_cash=self.collected_cash,
-            order_value=self.order_value,
             due_amount=self.due_amount,
             is_active=self.is_active,
             created_by=self.created_by,
@@ -102,6 +101,24 @@ class SalesWeb(models.Model):
         # Set many-to-many relationships for history
         history.hardwarematerials.set(self.hardwarematerials.all())
         history.timbermaterials.set(self.timbermaterials.all())
+
+        today = timezone.now().date()
+
+            # Get or create the DailySalesSummary for today
+        summary, created = DailySalesSummary.objects.get_or_create(timestamp=today)
+
+            # Recalculate the values on every login
+        today_order = SalesWeb.objects.filter(created_at__date=today).aggregate(total=Sum('soa_amount'))['total'] or 0
+        total_order = SalesWeb.objects.aggregate(total=Sum('soa_amount'))['total'] or 0
+        today_received = SalesWeb.objects.filter(created_at__date=today).aggregate(total=Sum('payment_recieved'))['total'] or 0
+        total_received = SalesWeb.objects.aggregate(total=Sum('payment_recieved'))['total'] or 0
+
+            # Update the summary
+        summary.today_order_value = today_order
+        summary.total_order_value = total_order
+        summary.today_recieved_value = today_received
+        summary.total_recieved_value = total_received
+        summary.save()
 
     class Meta:
         ordering = ['-created_at']
@@ -135,7 +152,6 @@ class SalesWebHistory(models.Model):
     collected_tt = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     collected_cash = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
-    order_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     due_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     is_active = models.BooleanField(default=True)

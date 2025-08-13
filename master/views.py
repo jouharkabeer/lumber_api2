@@ -42,23 +42,7 @@ class LoginView(generics.GenericAPIView):
 
         if user is not None and user.is_active:
             # Handle daily summary update
-            today = timezone.now().date()
 
-            # Get or create the DailySalesSummary for today
-            summary, created = DailySalesSummary.objects.get_or_create(timestamp=today)
-
-            # Recalculate the values on every login
-            today_order = SalesWeb.objects.filter(created_at__date=today).aggregate(total=Sum('order_value'))['total'] or 0
-            total_order = SalesWeb.objects.aggregate(total=Sum('order_value'))['total'] or 0
-            today_received = SalesWeb.objects.filter(created_at__date=today).aggregate(total=Sum('payment_recieved'))['total'] or 0
-            total_received = SalesWeb.objects.aggregate(total=Sum('payment_recieved'))['total'] or 0
-
-            # Update the summary
-            summary.today_order_value = today_order
-            summary.total_order_value = total_order
-            summary.today_recieved_value = today_received
-            summary.total_recieved_value = total_received
-            summary.save()
 
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)

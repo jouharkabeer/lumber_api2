@@ -76,12 +76,6 @@ class AnyCheckInChecker(generics.ListAPIView):
         )
 
 
-class DailyReport(generics.ListAPIView):
-    permission_classes = [permissions.AllowAny]
-
-    queryset = Meetinglog.objects.all()
-    serializer_class = ReportSerializer
-
 
 class Scheduledpendingmeets(generics.ListAPIView):
     serializer_class = SalesWebSerializer
@@ -172,3 +166,25 @@ class CollectionReportByDate(generics.ListAPIView):
             queryset = queryset.filter(salesman=salesman)
 
         return queryset
+
+
+class DailyReport(generics.ListAPIView):
+    # permission_classes = [permissions.AllowAny]
+
+    serializer_class = ReportSerializer
+    def get_queryset(self):
+    
+        queryset = Meetinglog.objects.all()
+        salesman = self.request.query_params.get('sales_id')
+        date = self.request.query_params.get('date')
+
+        if salesman:
+            queryset = queryset.filter(sales_web__salesman=salesman)
+        
+        if date:
+            queryset = queryset.filter(created_at = date)
+
+        return queryset
+
+
+
