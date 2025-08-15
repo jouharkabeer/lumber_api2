@@ -169,7 +169,6 @@ class CollectionReportByDate(generics.ListAPIView):
 
 
 class DailyReport(generics.ListAPIView):
-    # permission_classes = [permissions.AllowAny]
 
     serializer_class = ReportSerializer
     def get_queryset(self):
@@ -182,7 +181,7 @@ class DailyReport(generics.ListAPIView):
             queryset = queryset.filter(sales_web__salesman=salesman)
         
         if date:
-            queryset = queryset.filter(created_at = date)
+            queryset = queryset.filter(created_at__date=date)
 
         return queryset
 

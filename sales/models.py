@@ -13,10 +13,8 @@ class SalesWeb(models.Model):
     call_status = models.ForeignKey(CallStatus, on_delete=models.CASCADE)
     prospect = models.ForeignKey(Prospect, on_delete=models.CASCADE, null=True, blank=True)
     order_status = models.ForeignKey(OrderStatusType, on_delete=models.CASCADE, null=True, blank=True)
-    # payment_method = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE, null=True, blank=True)
 
     mode_of_collection = models.CharField(max_length=10, null=True, blank=True)
-
     expected_payment_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     expected_payment_date = models.DateField(null=True, blank=True)
     next_meeting_date = models.DateField(null=True, blank=True)
