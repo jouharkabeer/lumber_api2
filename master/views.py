@@ -271,7 +271,7 @@ class DashboardforSalesman(APIView):
     def get(self, request, pk):
         total_orders = SalesWeb.objects.filter(salesman=pk).count()
         active_orders = SalesWeb.objects.filter(is_active=True, salesman=pk).count()
-        total_order_value = SalesWeb.objects.filter(is_active=True, salesman=pk).aggregate(total=Sum('order_value'))['total'] or 0
+        total_order_value = SalesWeb.objects.filter(is_active=True, salesman=pk).aggregate(total=Sum('soa_amount'))['total'] or 0
         total_due_value = SalesWeb.objects.filter(is_active=True, salesman=pk).aggregate(total=Sum('due_amount'))['total'] or 0
 
         data = {
