@@ -138,7 +138,7 @@ class UserEnableView(APIView):
 
 
 class SalesmanActiveView(generics.ListAPIView):
-    queryset = User.objects.filter(user_type__name = 'Salesman', is_active = True)
+    queryset = User.objects.filter(user_type__name = 'Sales Person', is_active = True)
     serializer_class = UserSerializer        
 
 
@@ -238,7 +238,7 @@ from django.utils.timezone import now
 class Dashboard(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
-        salesman_count = User.objects.filter(user_type__name='Salesman', is_active=True).count()
+        salesman_count = User.objects.filter(user_type__name='Sales Person', is_active=True).count()
         total_orders = SalesWeb.objects.count()
         active_orders = SalesWeb.objects.filter(is_active=True).count()
     
