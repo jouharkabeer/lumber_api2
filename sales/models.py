@@ -171,8 +171,8 @@ class SalesWebHistory(models.Model):
 class Meetinglog(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     sales_web = models.ForeignKey('SalesWeb', on_delete=models.CASCADE)
-    latitude = models.DecimalField(max_digits=11, decimal_places=7, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=7, null=True, blank=True)
+    latitude = models.DecimalField(max_digits=20, decimal_places=12, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=20, decimal_places=12, null=True, blank=True)
     location_name = models.CharField(max_length=250, null=True, blank=True)
     time_in = models.DateTimeField(null=True, blank=True)
     time_out = models.DateTimeField(null=True, blank=True)
