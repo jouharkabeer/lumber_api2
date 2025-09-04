@@ -159,12 +159,76 @@ class CollectionReportByDate(generics.ListAPIView):
         print(start)
         # Apply date filter if both start and end are valid
         if start and end:
-            queryset = queryset.filter(created_at__date__range=[start, end])
+            queryset = queryset.filter(updated_at__date__range=[start, end])
 
         # Apply salesman filter if given
         if salesman:
             queryset = queryset.filter(salesman=salesman)
 
+        return queryset
+
+
+import calendar
+import datetime
+from django.db.models import Sum, Q, OuterRef, Subquery
+from rest_framework import generics
+from rest_framework.exceptions import ValidationError
+from .models import SalesWeb, CollectionAmount
+from .serializers import CollectionReportSerializer
+
+
+class CollectionReportByDate(generics.ListAPIView):
+    serializer_class = CollectionReportSerializer
+
+    def get_queryset(self):
+
+
+        # Read params
+        month_year = self.request.query_params.get("month")
+        salesman = self.request.query_params.get("sales_id")
+        print(month_year)
+        if not month_year:
+            raise ValidationError("'month_year' parameter is required. (format YYYY-MM)")
+
+        try:
+            year, month_num = map(int, month_year.split("-"))
+        except ValueError:
+            raise ValidationError(f"Invalid 'month_year': {month_year}. Expected format YYYY-MM")
+
+        # Calculate first and last day of the month
+        start = datetime.date(year, month_num, 1)
+        last_day = calendar.monthrange(year, month_num)[1]
+        end = datetime.date(year, month_num, last_day)
+        print(start)
+        print(end)
+        
+        # queryset = SalesWeb.objects.all()
+
+        
+        salesweb_ids = CollectionAmount.objects.filter(
+            created_at__date__range=[start, end]
+        ).values_list("salesweb_id", flat=True).distinct()
+
+        # Filter SalesWeb by those IDs
+        queryset = SalesWeb.objects.filter(id__in=salesweb_ids)
+
+
+
+        # Apply salesman filter if given
+        if salesman:
+            queryset = queryset.filter(salesman=salesman)
+
+        # Add annotation for sum of collection amounts
+        collection_filter = Q(salesweb_id=OuterRef('pk')) & Q(created_at__date__range=[start, end])
+
+        queryset = queryset.annotate(
+            this_month_collection=Subquery(
+                CollectionAmount.objects.filter(collection_filter)
+                .values('salesweb_id')
+                .annotate(total=Sum('amount'))
+                .values('total')[:1]
+            )
+        )
         return queryset
 
 

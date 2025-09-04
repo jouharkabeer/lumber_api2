@@ -45,6 +45,8 @@ class SalesWebSerializer(serializers.ModelSerializer):
     salesman_name = serializers.SerializerMethodField()
     hardware_material_name = serializers.SerializerMethodField()
     timber_material_name = serializers.SerializerMethodField()
+    hardware_category_name = serializers.SerializerMethodField()
+    timber_category_name = serializers.SerializerMethodField()
 
     class Meta:
         model = SalesWeb
@@ -77,12 +79,17 @@ class SalesWebSerializer(serializers.ModelSerializer):
     def get_salesman_name(self, obj):
         return obj.salesman.namefull if obj.salesman else None
 
-
     def get_hardware_material_name(self, obj):
         return [m.hardware_material_name for m in obj.hardwarematerials.all()]
       
     def get_timber_material_name(self, obj):
         return [m.timber_material_name for m in obj.timbermaterials.all()]  
+
+    def get_hardware_category_name(self, obj):
+        return [m.hardware_material_catagory_name for m in obj.hardwarecategories.all()]
+      
+    def get_timber_category_name(self, obj):
+        return [m.timber_material_catagory_name for m in obj.timbercategories.all()]  
 
 
 class MeetingLogSerializer(serializers.ModelSerializer):
@@ -112,7 +119,9 @@ class CollectionReportSerializer(serializers.ModelSerializer):
     customer_name = serializers.SerializerMethodField()
     salesman_name = serializers.SerializerMethodField()
     branch_code = serializers.SerializerMethodField()
-
+    this_month_collection = serializers.DecimalField(
+        max_digits=12, decimal_places=2, read_only=True
+    )
 
     class Meta:
         model = SalesWeb

@@ -33,7 +33,6 @@ urlpatterns = [
     path('change_password/byadmin/', AdminSetPasswordView.as_view()),
     path('dashboarddetails/', Dashboard.as_view()),
     path('dashboarddetails/bysalesman/<uuid:pk>/', DashboardforSalesman.as_view()),
-    path('order_amount_data/', OrderAmount.as_view()),
     path('order_chart_data/', Orderchartdata.as_view()),
 
 ]

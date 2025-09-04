@@ -9,6 +9,8 @@ class SalesWeb(models.Model):
     salesman = models.ForeignKey(User, on_delete=models.CASCADE)
     hardwarematerials = models.ManyToManyField(HardWareMaterial, blank=True)
     timbermaterials = models.ManyToManyField(TimberMaterial,  blank=True)
+    hardwarecategories = models.ManyToManyField(HardWareMaterialCategory, blank=True)
+    timbercategories = models.ManyToManyField(TimberMaterialCategory,  blank=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     call_status = models.ForeignKey(CallStatus, on_delete=models.CASCADE)
     prospect = models.ForeignKey(Prospect, on_delete=models.CASCADE, null=True, blank=True)
@@ -19,7 +21,7 @@ class SalesWeb(models.Model):
     expected_payment_date = models.DateField(null=True, blank=True)
     next_meeting_date = models.DateField(null=True, blank=True)
     meeting_done = models.BooleanField(default=False)
-    payment_recieved = models.IntegerField(default=0, null=True, blank=True)
+    payment_recieved = models.DecimalField(default=0, max_digits=10, decimal_places=2, null=True, blank=True)
     final_due_date = models.DateField(null=True, blank=True)
     soa_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
@@ -31,6 +33,8 @@ class SalesWeb(models.Model):
     collected_cdc = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     collected_tt = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     collected_cash = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    collected_amount_now = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    collected_amount_now_two = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     due_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     is_active = models.BooleanField(default=True)
@@ -40,31 +44,45 @@ class SalesWeb(models.Model):
     remarks = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        # Calculate due amount if order value is given
+
+        # Set expected_payment_amount based on sum of expected values
+        self.expected_payment_amount = sum(filter(None, [
+            self.expected_cash,
+            self.expected_cdc,
+            self.expected_pdc,
+            self.expected_tt,
+        ]))
+
+        # Set payment_received as sum of collected amounts
+        self.payment_recieved = sum(filter(None, [
+            self.collected_cash,
+            self.collected_cdc,
+            self.collected_pdc,
+            self.collected_tt,
+        ]))
+        if self.collected_amount_now is not None:
+            CollectionAmount.objects.create(
+                salesweb = self,
+                amount = self.collected_amount_now
+            )
+            # self.collected_amount_now_two = self.collected_amount_now
+            self.collected_amount_now = None
+            
+        # Calculate due if soa_amount exists
         if self.soa_amount is not None:
-            self.payment_recieved = self.payment_recieved or 0
             self.due_amount = self.soa_amount - self.payment_recieved
-
-        # Set expected_payment_amount based on priority of available expected values
-        self.expected_payment_amount = (
-            self.expected_cash or
-            self.expected_cdc or
-            self.expected_pdc or
-            self.expected_tt or
-            None
-        )
-
-        # Set payment_recieved based on collected amounts (prioritize cash > cdc > pdc > tt)
-        self.payment_recieved = (
-            self.collected_cash or
-            self.collected_cdc or
-            self.collected_pdc or
-            self.collected_tt or
-            0
-        )
 
         # Save the current SalesWeb instance
         super().save(*args, **kwargs)
+
+
+        # if self.collected_amount_now_two:
+        #     CollectionAmount.objects.create(
+        #         salesweb = self,
+        #         amount = self.collected_amount_now_two
+        #     )
+        #     self.collected_amount_now_two = None
+
 
         # Create a snapshot in history
         history = SalesWebHistory.objects.create(
@@ -106,9 +124,9 @@ class SalesWeb(models.Model):
         summary, created = DailySalesSummary.objects.get_or_create(timestamp=today)
 
             # Recalculate the values on every login
-        today_order = SalesWeb.objects.filter(created_at__date=today).aggregate(total=Sum('soa_amount'))['total'] or 0
+        today_order = SalesWeb.objects.filter(updated_at__date=today).aggregate(total=Sum('soa_amount'))['total'] or 0
         total_order = SalesWeb.objects.aggregate(total=Sum('soa_amount'))['total'] or 0
-        today_received = SalesWeb.objects.filter(created_at__date=today).aggregate(total=Sum('payment_recieved'))['total'] or 0
+        today_received = SalesWeb.objects.filter(updated_at__date=today).aggregate(total=Sum('payment_recieved'))['total'] or 0
         total_received = SalesWeb.objects.aggregate(total=Sum('payment_recieved'))['total'] or 0
 
             # Update the summary
@@ -119,7 +137,14 @@ class SalesWeb(models.Model):
         summary.save()
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['-updated_at']
+
+class CollectionAmount(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    salesweb = models.ForeignKey(SalesWeb, on_delete=models.CASCADE, related_name="recived_history")
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
 
 
 
