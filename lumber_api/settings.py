@@ -27,17 +27,12 @@ import os
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Vite dev server
-    "http://localhost:5174",  # Vite dev server
-    "http://localhost:8081",  # Vite dev server
-    "https://lumberworld-backend.onrender.com",
-    "https://lsofito-dsr.netlify.app",
-    'https://1rmbrkt9-5173.inc1.devtunnels.ms',
+    "https://web-app.lumberworldllc.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
