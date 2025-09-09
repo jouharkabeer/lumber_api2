@@ -18,7 +18,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # method = 'production'
-method = 'development'
+# method = 'development'
 
 
 # Quick-start development settings - unsuitable for production
@@ -26,7 +26,7 @@ method = 'development'
 import os
 
 # SECURITY WARNING: keep the secret key used in production secret!
-
+SECRET_KEY = 'django-insecure-)m(b&+41b#-x!zj#9hmo58jpv@qly$(q1+^n1r&ar2r+&hr3-v'
 DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
@@ -150,36 +150,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-if method == 'production':
-    SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
-    DEBUG = os.getenv("DEBUG") == "True"
-    import dj_database_url
-
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=os.getenv("DATABASE_URL"),  # fallback if manually needed
-            conn_max_age=600,
-            ssl_require=True
-        )
-    }
-
-if method == 'development':
-
-    SECRET_KEY = 'django-insecure-)m(b&+41b#-x!zj#9hmo58jpv@qly$(q1+^n1r&ar2r+&hr3-v'
-    DEBUG = True
-    # DATABASES = {
-    #     'default': {
-    #         'ENGINE': 'django.db.backends.postgresql',
-    #         'NAME': 'railway',
-    #         'USER': 'postgres',
-    #         'PASSWORD': 'cZnrYFauUhfMTmTrOPHiFheoXymtuXIJ',
-    #         'HOST': 'trolley.proxy.rlwy.net',
-    #         'PORT': '16698',
-    #     }
-    # }
-
-
 
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
