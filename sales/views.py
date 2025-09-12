@@ -94,6 +94,10 @@ class TodaySalemeetPending(generics.ListAPIView):
 
     def get_queryset(self):
         pk = self.kwargs.get('pk')
+        print(today)
+        print()
+        print()
+        print()
         return SalesWeb.objects.filter(
             next_meeting_date=today,
             salesman_id=pk,

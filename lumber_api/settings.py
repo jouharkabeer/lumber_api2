@@ -33,6 +33,9 @@ ALLOWED_HOSTS = ["*"]
 
 CORS_ALLOWED_ORIGINS = [
     "https://web-app.lumberworldllc.com",
+    "http://localhost:8081",
+    'http://localhost:5173',
+    'https://lumberworldllc.netlify.app'
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -90,24 +93,24 @@ AUTH_USER_MODEL = 'master.User'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'lumber_api_db',
-        'USER': 'lumber_user',
-        'PASSWORD': 'Lumber@202528',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'lumber_api_db',
+#         'USER': 'lumber_user',
+#         'PASSWORD': 'Lumber@202528',
+#         'HOST': '127.0.0.1',
+#         'PORT': '5432',
+#     }
+# }
 
 
 # Password validation
