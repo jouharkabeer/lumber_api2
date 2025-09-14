@@ -4,7 +4,9 @@ from rest_framework import generics,status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
+from django.utils.timezone import localtime
+from datetime import timedelta
+
 
 
 #------------------------------------SalesWeb ------------------------------
@@ -60,13 +62,10 @@ class SalesWebActiveListViewbySalesman(generics.ListAPIView):
         return SalesWeb.objects.filter(salesman = pk, is_active = True)
 
 
-today = timezone.now().date()
-
 
 
 class AnyCheckInChecker(generics.ListAPIView):
     serializer_class = MeetingLogSerializer
-
     def get_queryset(self):
         pk = self.kwargs.get('pk')
         return Meetinglog.objects.filter(
@@ -79,9 +78,9 @@ class AnyCheckInChecker(generics.ListAPIView):
 
 class Scheduledpendingmeets(generics.ListAPIView):
     serializer_class = SalesWebSerializer
-
     def get_queryset(self):
         pk = self.kwargs.get('pk')
+        today = localtime().date()
         return SalesWeb.objects.filter(
             next_meeting_date__gt=today,
             salesman_id=pk,
@@ -94,10 +93,7 @@ class TodaySalemeetPending(generics.ListAPIView):
 
     def get_queryset(self):
         pk = self.kwargs.get('pk')
-        print(today)
-        print()
-        print()
-        print()
+        today = localtime().date()
         return SalesWeb.objects.filter(
             next_meeting_date=today,
             salesman_id=pk,
@@ -109,6 +105,7 @@ class TodaySalesMeetDone(generics.ListAPIView):
 
     def get_queryset(self):
         pk = self.kwargs.get('pk')
+        today = localtime().date()
         return Meetinglog.objects.filter(
             created_at__date=today,
             sales_web__salesman_id=pk,
