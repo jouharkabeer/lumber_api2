@@ -14,6 +14,10 @@ class SalesWebListView(generics.ListAPIView):
     queryset = SalesWeb.objects.all()
     serializer_class = SalesWebSerializer
 
+class SalesWebListView100(generics.ListAPIView):
+    queryset = SalesWeb.objects.all()[:100]  # get first 100 records
+    serializer_class = SalesWebSerializer
+
 class SalesWebActiveListView(generics.ListAPIView):
     queryset = SalesWeb.objects.filter(is_active=True)
     serializer_class = SalesWebSerializer
