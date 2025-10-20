@@ -7,6 +7,7 @@ urlpatterns = [
     path('view_activeSalesWeb/bysalesman/<uuid:pk>/', SalesWebActiveListViewbySalesman.as_view(), name='active_SalesMobile'),
 
     path('view_allMeetingLog/', MeetingLogListView.as_view(), name='all_SalesWeb'),
+    path('view_allMeetingLog/', MeetingLogListView100.as_view(), name='all_SalesWeb'),
 
     path('view_allSalesWebs/', SalesWebListView.as_view(), name='all_SalesWeb'),
     path('view_allSalesWebs_first100/', SalesWebListView100.as_view(), name='all_SalesWeb'),

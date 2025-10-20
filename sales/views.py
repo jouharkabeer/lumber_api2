@@ -140,6 +140,10 @@ class MeetingLogListView(generics.ListAPIView):
     queryset = Meetinglog.objects.all()
     serializer_class = MeetingLogSerializer
 
+class MeetingLogListView100(generics.ListAPIView):
+    queryset = Meetinglog.objects.all()[:100]  # get first 100 records
+    serializer_class = MeetingLogSerializer
+
 
 from rest_framework import generics, permissions
 from django.utils.dateparse import parse_date
