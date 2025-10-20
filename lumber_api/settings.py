@@ -29,13 +29,13 @@ import os
 SECRET_KEY = 'django-insecure-)m(b&+41b#-x!zj#9hmo58jpv@qly$(q1+^n1r&ar2r+&hr3-v'
 DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["web-api.lumberworldllc.com", "web-app.lumberworldllc.com", "localhost",]
 
 CORS_ALLOWED_ORIGINS = [
     "https://web-app.lumberworldllc.com",
     "http://localhost:8081",
     'http://localhost:5173',
-    'https://lumberworldllc.netlify.app'
+    # 'https://lumberworldllc.netlify.app'
 ]
 
 CORS_ALLOW_CREDENTIALS = True
