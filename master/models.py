@@ -65,12 +65,12 @@ class User(AbstractUser):
 
 
 
-
+from django.db.models.functions import Lower
 
 
 class Customer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    customer_name = models.CharField(max_length=255)
+    customer_name = models.CharField(max_length=255,)
     address = models.TextField()
     is_active = models.BooleanField(default=True)
     view_all = models.BooleanField(default=False)
@@ -89,7 +89,7 @@ class Customer(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
-        ordering = ['-created_at']  # Sorts by created_at descending (latest first)
+        ordering = [Lower('customer_name')]
 
     def __str__(self):
         return self.customer_name

@@ -29,7 +29,7 @@ import os
 SECRET_KEY = 'django-insecure-)m(b&+41b#-x!zj#9hmo58jpv@qly$(q1+^n1r&ar2r+&hr3-v'
 DEBUG = False
 
-ALLOWED_HOSTS = ["web-api.lumberworldllc.com", "web-app.lumberworldllc.com", "localhost",]
+ALLOWED_HOSTS = ["web-api.lumberworldllc.com", "lw.lsofito.com", "web-app.lumberworldllc.com", "localhost",]
 
 CORS_ALLOWED_ORIGINS = [
     "https://web-app.lumberworldllc.com",
