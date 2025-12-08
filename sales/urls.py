@@ -10,7 +10,6 @@ urlpatterns = [
     path('view_allMeetingLog_first100/', MeetingLogListView100.as_view(), name='all_SalesWeb'),
 
     path('view_allSalesWebs/', SalesWebListView.as_view(), name='all_SalesWeb'),
-    path('view_allSalesWebs_first100/', SalesWebListView100.as_view(), name='all_SalesWeb'),
     path('view_activeSalesWeb/', SalesWebActiveListView.as_view(), name='active_SalesWeb'),
 
     path('create_SalesWeb/', SalesWebCreateView.as_view(), name='create_SalesWeb'),

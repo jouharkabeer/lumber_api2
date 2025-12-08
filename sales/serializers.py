@@ -52,6 +52,8 @@ class SalesWebSerializer(serializers.ModelSerializer):
         model = SalesWeb
         fields = '__all__'
         read_only_fields = ['created_by', 'created_at', 'updated_at']
+    
+    
 
     def get_sales_man(self, obj):
         return obj.created_by.namefull if obj.created_by else None
@@ -115,6 +117,7 @@ class MeetingLogSerializer(serializers.ModelSerializer):
     def get_timber_material_name(self, obj):
         return [m.timber_material_name for m in obj.sales_web.timbermaterials.all()]  
 
+
 class CollectionReportSerializer(serializers.ModelSerializer):
     customer_name = serializers.SerializerMethodField()
     salesman_name = serializers.SerializerMethodField()
@@ -143,7 +146,7 @@ class CollectionReportSerializer(serializers.ModelSerializer):
 class ReportSerializer(serializers.ModelSerializer):
     customer_name = serializers.SerializerMethodField()
     salesman_name = serializers.SerializerMethodField()
-    payment_recived = serializers.SerializerMethodField()
+    # payment_recived = serializers.SerializerMethodField()
     call_status = serializers.SerializerMethodField()
     hardware_material_name = serializers.SerializerMethodField()
     timber_material_name = serializers.SerializerMethodField()
@@ -162,8 +165,8 @@ class ReportSerializer(serializers.ModelSerializer):
     def get_call_status(self, obj):
         return obj.sales_web.call_status.call_status_name if obj.sales_web.call_status else None
     
-    def get_payment_recived(self, obj):
-        return obj.sales_web.payment_recieved if obj.sales_web else None
+    # def get_payment_recived(self, obj):
+    #     return obj.sales_web.payment_recieved if obj.sales_web else None
     
     def get_hardware_material_name(self, obj):
         return [m.hardware_material_name for m in obj.sales_web.hardwarematerials.all()]

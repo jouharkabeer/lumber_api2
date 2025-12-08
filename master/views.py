@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from .pagination import StandardResultsSetPagination
 
 
 from rest_framework import generics, status
@@ -307,8 +308,17 @@ class TokenValidity(generics.ListAPIView):
 
 #------------------------------------customer ------------------------------
 class CustomerListView(generics.ListAPIView):
-    queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        return (
+            Customer.objects
+            .select_related("created_by")  # 🔥 critical optimization
+            .all()
+            .order_by("-created_at")
+        )
+
 
            
 
@@ -316,14 +326,24 @@ class CustomerActiveListView(generics.ListAPIView):
     queryset = Customer.objects.filter(is_active=True)
     serializer_class = CustomerSerializer
 
+from django.db.models import Q
+
 class CustomerActiveListBySalesManView(generics.ListAPIView):
     serializer_class = CustomerSerializer
+
     def get_queryset(self):
         pk = self.kwargs.get('pk')
-        return Customer.objects.filter(
-            Q(created_by=pk, is_active=True) |
-            Q(view_all=True, is_active=True)
-        ).distinct()
+
+        return (
+            Customer.objects
+            .select_related("created_by")  # 🔥 critical for speed
+            .filter(
+                Q(is_active=True) &
+                (Q(created_by=pk) | Q(view_all=True))
+            )
+            .distinct()
+        )
+
 
 class CustomerCreateView(generics.CreateAPIView):
     serializer_class = CustomerSerializer

@@ -6,17 +6,35 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import localtime
 from datetime import timedelta
-
+from .pagination import StandardResultsSetPagination
 
 
 #------------------------------------SalesWeb ------------------------------
 class SalesWebListView(generics.ListAPIView):
-    queryset = SalesWeb.objects.all()
     serializer_class = SalesWebSerializer
+    pagination_class = StandardResultsSetPagination
 
-class SalesWebListView100(generics.ListAPIView):
-    queryset = SalesWeb.objects.all()[:100]  # get first 100 records
-    serializer_class = SalesWebSerializer
+    def get_queryset(self):
+        return (
+            SalesWeb.objects
+            .select_related(
+                "customer",
+                "call_status",
+                "prospect",
+                "order_status",
+                "salesman",
+                "created_by",
+            )
+            .prefetch_related(
+                "hardwarematerials",
+                "timbermaterials",
+                "hardwarecategories",
+                "timbercategories",
+            )
+            .all()
+            .order_by("-created_at")
+        )
+
 
 class SalesWebActiveListView(generics.ListAPIView):
     queryset = SalesWeb.objects.filter(is_active=True)
@@ -56,7 +74,27 @@ class SalesWebListViewbySalesman(generics.ListAPIView):
 
     def get_queryset(self):
         pk = self.kwargs.get('pk')
-        return SalesWeb.objects.filter(salesman = pk)
+
+        return (
+            SalesWeb.objects
+            .select_related(
+                "customer",
+                "call_status",
+                "prospect",
+                "order_status",
+                "salesman",
+                "created_by",
+            )
+            .prefetch_related(
+                "hardwarematerials",
+                "timbermaterials",
+                "hardwarecategories",
+                "timbercategories",
+            )
+            .filter(salesman=pk)
+            .order_by("-created_at")
+        )
+
 
 class SalesWebActiveListViewbySalesman(generics.ListAPIView):
     serializer_class = SalesWebSerializer
@@ -137,8 +175,24 @@ class CollectionReport(generics.ListAPIView):
 
 
 class MeetingLogListView(generics.ListAPIView):
-    queryset = Meetinglog.objects.all()
     serializer_class = MeetingLogSerializer
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        return (
+            Meetinglog.objects
+            .select_related(
+                "sales_web",
+                "sales_web__customer",
+                "sales_web__salesman",
+            )
+            .prefetch_related(
+                "sales_web__hardwarematerials",
+                "sales_web__timbermaterials",
+            )
+            .all()
+            .order_by("-created_at")
+        )
 
 class MeetingLogListView100(generics.ListAPIView):
     queryset = Meetinglog.objects.all()[:100]  # get first 100 records
@@ -241,22 +295,49 @@ class CollectionReportByDate(generics.ListAPIView):
         return queryset
 
 
+
+from datetime import date
+from rest_framework import generics
+from django.db.models import Prefetch
+
 class DailyReport(generics.ListAPIView):
-
     serializer_class = ReportSerializer
+
     def get_queryset(self):
-    
-        queryset = Meetinglog.objects.all()
+        base_qs = Meetinglog.objects.select_related(
+            "sales_web",
+            "sales_web__salesman",
+            "sales_web__customer",
+            "sales_web__call_status",
+        ).prefetch_related(
+            Prefetch("sales_web__hardwarematerials"),
+            Prefetch("sales_web__timbermaterials"),
+        )
+
         salesman = self.request.query_params.get('sales_id')
-        date = self.request.query_params.get('date')
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
 
+        # salesman + date range
+        if salesman and start_date and end_date:
+            return base_qs.filter(
+                sales_web__salesman=salesman,
+                created_at__date__range=[start_date, end_date]
+            )
+
+        # date range only
+        if start_date and end_date:
+            return base_qs.filter(
+                created_at__date__range=[start_date, end_date]
+            )
+
+        # salesman only
         if salesman:
-            queryset = queryset.filter(sales_web__salesman=salesman)
-        
-        if date:
-            queryset = queryset.filter(created_at__date=date)
+            return base_qs.filter(
+                sales_web__salesman=salesman,
+                created_at__date=date.today()
+            )
 
-        return queryset
-
-
+        # default: today only
+        return base_qs.filter(created_at__date=date.today())
 

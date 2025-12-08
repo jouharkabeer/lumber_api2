@@ -121,20 +121,26 @@ class SalesWeb(models.Model):
         today = timezone.now().date()
 
             # Get or create the DailySalesSummary for today
-        summary, created = DailySalesSummary.objects.get_or_create(timestamp=today)
+            # Get today's summary safely
+        summary = DailySalesSummary.objects.filter(timestamp=today).first()
 
-            # Recalculate the values on every login
+        # If missing, create new
+        if not summary:
+            summary = DailySalesSummary.objects.create(timestamp=today)
+
+        # Recalculate values
         today_order = SalesWeb.objects.filter(updated_at__date=today).aggregate(total=Sum('soa_amount'))['total'] or 0
         total_order = SalesWeb.objects.aggregate(total=Sum('soa_amount'))['total'] or 0
         today_received = SalesWeb.objects.filter(updated_at__date=today).aggregate(total=Sum('payment_recieved'))['total'] or 0
         total_received = SalesWeb.objects.aggregate(total=Sum('payment_recieved'))['total'] or 0
 
-            # Update the summary
+        # Update fields
         summary.today_order_value = today_order
         summary.total_order_value = total_order
         summary.today_recieved_value = today_received
         summary.total_recieved_value = total_received
         summary.save()
+
 
     class Meta:
         ordering = ['-updated_at']
@@ -214,4 +220,4 @@ class DailySalesSummary(models.Model):
     total_order_value = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     today_recieved_value = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     total_recieved_value = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    timestamp = models.DateField(auto_now_add=True)
+    timestamp = models.DateField(unique=True)
