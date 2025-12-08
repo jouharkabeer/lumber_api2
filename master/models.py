@@ -7,6 +7,14 @@ from django.utils import timezone
 # User = get_user_model()
 
 
+from django.db.models import Manager
+from django.db.models.functions import Lower
+
+class OrderedManager(Manager):
+    def get_queryset(self):
+        return super().get_queryset().order_by(Lower('customer_name'))
+
+
 
 
 class UserType(models.Model):
@@ -61,14 +69,10 @@ class User(AbstractUser):
 
 
 
-
-
-
-
-from django.db.models.functions import Lower
-
-
 class Customer(models.Model):
+
+    objects = OrderedManager()
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     customer_name = models.CharField(max_length=255, unique=True)
     address = models.TextField()
