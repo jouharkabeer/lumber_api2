@@ -421,6 +421,14 @@ class HardWareMaterialListView(generics.ListAPIView):
     queryset = HardWareMaterial.objects.all()
     serializer_class = HardWareMaterialSerializer
 
+    def get_queryset(self):
+        return (
+            HardWareMaterial.objects
+            .select_related("created_by", "hardware_material_category")
+            .all()
+            .order_by("hardware_material_name")  # optional
+        )
+
 class HardWareMaterialActiveListView(generics.ListAPIView):
     queryset = HardWareMaterial.objects.filter(is_active=True)
     serializer_class = HardWareMaterialSerializer
@@ -499,8 +507,16 @@ class TimberMaterialCategoryEnableView(APIView):
 ######################## TimberMaterial ############################
 
 class TimberMaterialListView(generics.ListAPIView):
-    queryset = TimberMaterial.objects.all()
     serializer_class = TimberMaterialSerializer
+
+    def get_queryset(self):
+        return (
+            TimberMaterial.objects
+            .select_related("created_by", "timber_material_category")
+            .all()
+            .order_by("timber_material_name")  # optional
+        )
+
 
 class TimberMaterialActiveListView(generics.ListAPIView):
     queryset = TimberMaterial.objects.filter(is_active=True)
