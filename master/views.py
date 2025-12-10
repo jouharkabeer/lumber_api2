@@ -139,8 +139,18 @@ class UserEnableView(APIView):
 
 
 class SalesmanActiveView(generics.ListAPIView):
-    queryset = User.objects.filter(user_type__name = 'Sales Person', is_active = True)
-    serializer_class = UserSerializer        
+    serializer_class = UserSalesmanSerializer
+
+    def get_queryset(self):
+        return (
+            User.objects
+            .filter(user_type='Sales Person', is_active=True)
+            .select_related("branch")
+            .only(
+                "id", "username", "email", "first_name", "last_name",
+                "branch", "user_type", "is_active"
+            )
+        )
 
 
 from rest_framework.views import APIView

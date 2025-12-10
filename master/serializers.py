@@ -71,6 +71,23 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 
+class UserSalesmanSerializer(serializers.ModelSerializer):
+    branch_code = serializers.SerializerMethodField()
+    user_type_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name',
+            'branch', 'namefull', 'user_type',
+            'branch_code', 'user_type_name', 'is_active'
+        ]
+
+    def get_user_type_name(self, obj):
+        return obj.user_type
+
+    def get_branch_code(self, obj):
+        return obj.branch.branch_code if obj.branch else None
 
 
 
