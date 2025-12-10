@@ -139,17 +139,13 @@ class UserEnableView(APIView):
 
 
 class SalesmanActiveView(generics.ListAPIView):
-    serializer_class = UserSalesmanSerializer
+    serializer_class = SalesmanDropdownSerializer
 
     def get_queryset(self):
         return (
             User.objects
-            .filter(user_type='Sales Person', is_active=True)
-            .select_related("branch")
-            .only(
-                "id", "username", "email", "first_name", "last_name",
-                "branch", "user_type", "is_active"
-            )
+                .filter(user_type__name='Sales Person', is_active=True)
+                .only("id", "namefull")      # fastest possible
         )
 
 
