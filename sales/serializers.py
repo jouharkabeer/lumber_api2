@@ -173,6 +173,8 @@ class ReportSerializer(serializers.ModelSerializer):
       
     def get_timber_material_name(self, obj):
         return [m.timber_material_name for m in obj.sales_web.timbermaterials.all()]  
+
+ 
     
 class DailySalesSummarySerializer(serializers.ModelSerializer):
     class Meta:

@@ -299,6 +299,7 @@ class CollectionReportByDate(generics.ListAPIView):
 from datetime import date
 from rest_framework import generics
 from django.db.models import Prefetch
+from django.db.models import F
 
 class DailyReport(generics.ListAPIView):
     serializer_class = ReportSerializer
@@ -312,7 +313,11 @@ class DailyReport(generics.ListAPIView):
         ).prefetch_related(
             Prefetch("sales_web__hardwarematerials"),
             Prefetch("sales_web__timbermaterials"),
+        ).order_by(
+            F("sales_web__salesman__namefull").asc(nulls_last=True),
+            "created_at"
         )
+
 
         salesman = self.request.query_params.get('sales_id')
         start_date = self.request.query_params.get('start_date')

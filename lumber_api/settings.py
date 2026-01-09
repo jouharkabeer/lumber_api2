@@ -35,6 +35,7 @@ ALLOWED_HOSTS = [
     "web-app.lumberworldllc.com",
     "localhost",
     "127.0.0.1"
+    "127.0.0.1:8081"
 ]
 
 CORS_ALLOWED_ORIGINS = [

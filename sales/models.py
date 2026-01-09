@@ -215,6 +215,7 @@ class Meetinglog(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     remarks = models.TextField(blank=True, null=True)
 
+
 class DailySalesSummary(models.Model):
     today_order_value = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     total_order_value = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
