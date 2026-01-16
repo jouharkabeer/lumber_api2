@@ -322,12 +322,24 @@ class DailyReport(generics.ListAPIView):
         salesman = self.request.query_params.get('sales_id')
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
+        date = self.request.query_params.get('date')
 
         # salesman + date range
         if salesman and start_date and end_date:
             return base_qs.filter(
                 sales_web__salesman=salesman,
                 created_at__date__range=[start_date, end_date]
+            )
+        
+        if salesman and date:
+            return base_qs.filter(
+                sales_web__salesman=salesman,
+                created_at__date=date
+            )
+        
+        if date:
+            return base_qs.filter(
+                created_at__date=date
             )
 
         # date range only
