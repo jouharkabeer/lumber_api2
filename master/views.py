@@ -313,18 +313,31 @@ class TokenValidity(generics.ListAPIView):
 
 
 #------------------------------------customer ------------------------------
+# class CustomerListView(generics.ListAPIView):
+#     serializer_class = CustomerSerializer
+#     pagination_class = StandardResultsSetPagination
+
+#     def get_queryset(self):
+#         return (
+#             Customer.objects
+#             .select_related("created_by")  # 🔥 critical optimization
+#             .all()
+#             .order_by("-created_at")
+#         )
+
+from rest_framework import generics, filters
+
 class CustomerListView(generics.ListAPIView):
     serializer_class = CustomerSerializer
     pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['customer_name']
 
     def get_queryset(self):
         return (
             Customer.objects
-            .select_related("created_by")  # 🔥 critical optimization
-            .all()
-            .order_by("-created_at")
+            .select_related("created_by")
         )
-
 
            
 

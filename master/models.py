@@ -66,37 +66,81 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
 
 
-
-
+import uuid
+from django.db import models
+from django.db.models.functions import Lower
 
 class Customer(models.Model):
-
     objects = OrderedManager()
-    
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    customer_name = models.CharField(max_length=255, unique=True)
+    customer_name = models.CharField(max_length=255, unique=True, db_index=True)
     address = models.TextField()
     is_active = models.BooleanField(default=True)
     view_all = models.BooleanField(default=False)
-    created_by = models.ForeignKey('User', on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_created")
+    created_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="customer_created"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     remarks = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
+        # normalize data ONCE, not on every query
         if self.customer_name:
-            self.customer_name = self.customer_name.title()
+            self.customer_name = self.customer_name.strip().lower()
         if self.address:
-            self.address = self.address.title()
+            self.address = self.address.strip()
         if self.remarks:
             self.remarks = self.remarks.strip().capitalize()
         super().save(*args, **kwargs)
 
     class Meta:
-        ordering = [Lower('customer_name')]
+        ordering = ['customer_name']  # fast, indexed, predictable
+        indexes = [
+            models.Index(
+                Lower('customer_name'),
+                name='customer_name_lower_idx'
+            ),
+        ]
 
     def __str__(self):
-        return self.customer_name
+        return self.customer_name.title()
+
+
+
+# class Customer(models.Model):
+
+#     objects = OrderedManager()
+    
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     customer_name = models.CharField(max_length=255, unique=True)
+#     address = models.TextField()
+#     is_active = models.BooleanField(default=True)
+#     view_all = models.BooleanField(default=False)
+#     created_by = models.ForeignKey('User', on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_created")
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+#     remarks = models.TextField(blank=True, null=True)
+
+#     def save(self, *args, **kwargs):
+#         if self.customer_name:
+#             self.customer_name = self.customer_name.title()
+#         if self.address:
+#             self.address = self.address.title()
+#         if self.remarks:
+#             self.remarks = self.remarks.strip().capitalize()
+#         super().save(*args, **kwargs)
+
+#     class Meta:
+#         ordering = [Lower('customer_name')]
+
+#     def __str__(self):
+#         return self.customer_name
 
 
 class HardWareMaterialCategory(models.Model):
